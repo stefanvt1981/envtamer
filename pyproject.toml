@@ -1,0 +1,27 @@
+[project]
+name = "env_tamer"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Stefan van Tilborg",email = "stefan@xprtz.net"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "click (==8.1.8)",
+    "sqlalchemy (==2.0.39)",
+    "sqlalchemy-utils (==0.41.2)"
+]
+
+packages = [
+    { include = "*.py" },
+    { include = "env_tamer" },
+    { include = "env_tamer/*.py" },
+]
+
+[tool.poetry.scripts]
+env_tamer = "env_tamer.cli:tame_env"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
