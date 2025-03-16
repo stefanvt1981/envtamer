@@ -6,7 +6,7 @@ possible_commands = ['init', 'pull', 'push', 'list']
 
 @click.command()
 @click.argument('command')
-@click.option('--directory', '-d',default=os.path.dirname(os.path.realpath(__file__)), help='Name of the directory to push. Defaults to current working directory if not specified.')
+@click.option('--directory', '-d',default=os.getcwd(), help='Name of the directory to push. Defaults to current working directory if not specified.')
 @click.option('--path', '-p', default='.env', help='Path to the env file. Defaults to \'.env\' in the specified or current directory.')
 def tame_env(command, directory, path):
     match command:

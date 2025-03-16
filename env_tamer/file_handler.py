@@ -7,17 +7,16 @@ class FileHandler:
     def read_env_file(self, file_name):
         full_path = os.path.join(self.path, file_name)
         if os.path.exists(full_path):
-            file = open(full_path)
-            lines = file.read()
-            envs = {}
-            for line in lines:
-                key, value = line.split('=')
-                envs[key] = value
-            return envs
+            env_vars = {}
+            with open(full_path, 'r', encoding='utf-8-sig') as file:
+                for line in file:
+                    split = line.strip().split('=')
+                    env_vars[split[0]] = split[1]
+            return env_vars
         else:
             print(f'.env file path: {full_path} not found.')
 
-    def write_env_file(self, file_name, envs):
+    def write_env_file(self, file_name, env_vars):
         full_path = os.path.join(self.path, file_name)
 
         if os.path.exists(full_path):
@@ -28,7 +27,7 @@ class FileHandler:
                 print('🛑 Operation cancelled.')
                 return
 
-            with open(full_path, 'w') as file:
-                for key, value in envs.items():
-                    file.write(f'{key}={value}\n')
+        with open(full_path, 'w') as file:
+            for key in env_vars:
+                file.write(f'{key}={env_vars[key]}\n')
 

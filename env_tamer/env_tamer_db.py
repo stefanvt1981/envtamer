@@ -42,19 +42,20 @@ class EnvTamerDb:
             if self.engine is None:
                 self.ensure_db()
             with Session(self.engine) as env_session:
-                for (key, value) in variables:
-                    stmt = select(EnvVariable).where(EnvVariable.directory == directory and EnvVariable.key == key)
-                    existing_env = env_session.scalars(stmt).one()
+                for key in variables:
+                    stmt = select(EnvVariable).where((EnvVariable.directory == directory) & (EnvVariable.key == key))
+                    existing_env = env_session.scalars(stmt).one_or_none()
                     if existing_env is None:
                         env_var = EnvVariable(
                             directory=directory,
                             key=key,
-                            value=value
+                            value=variables[key]
                         )
                         env_session.add(env_var)
                     else:
-                        existing_env.value = value
+                        existing_env.value = variables[key]
                 env_session.commit()
+                print (f'{len(variables)} saved successfully')
         except Exception as ex:
             print(f'🛑 save envs went wrong: {ex}')
 
