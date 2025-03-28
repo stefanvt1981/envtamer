@@ -1,6 +1,6 @@
 ﻿import os
-from env_tamer.env_variable import Base, EnvVariable
-from sqlalchemy import create_engine, MetaData, Engine, select
+from env_tamer_db.env_variable import EnvVariable, Base
+from sqlalchemy import create_engine, select
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy.orm import Session
 
@@ -32,10 +32,20 @@ class EnvTamerDb:
                     create_database(engine.url)
                     Base.metadata.create_all(engine)
                 self.engine = engine
+                # Set default to create table
+                with Session(self.engine) as env_session:
+                    env_var = EnvVariable(
+                        Directory='directory',
+                        Key='key',
+                        Value='value'
+                    )
+                    env_session.add(env_var)
+                    env_session.commit()
                 print('️🗄️Empty database file created successfully.')
             print('🚀 Ready to push and pull env files.')
-        except Exception as ex:
-            print(f'🛑 Init went wrong: {ex}')
+        except Exception:
+            print('🛑 Init went wrong')
+            raise
 
     def save_env_values(self, directory, variables):
         try:
@@ -43,84 +53,101 @@ class EnvTamerDb:
                 self.ensure_db()
             with Session(self.engine) as env_session:
                 for key in variables:
-                    stmt = select(EnvVariable).where((EnvVariable.directory == directory) & (EnvVariable.key == key))
+                    stmt = select(EnvVariable).where((EnvVariable.Directory == directory) & (EnvVariable.Key == key))
                     existing_env = env_session.scalars(stmt).one_or_none()
                     if existing_env is None:
                         env_var = EnvVariable(
-                            directory=directory,
-                            key=key,
-                            value=variables[key]
+                            Directory=directory,
+                            Key=key,
+                            Value=variables[key]
                         )
                         env_session.add(env_var)
                     else:
                         existing_env.value = variables[key]
                 env_session.commit()
                 print (f'{len(variables)} saved successfully')
-        except Exception as ex:
-            print(f'🛑 save envs went wrong: {ex}')
+        except Exception:
+            print('🛑 save envs went wrong')
+            raise
 
     def save_env_value(self, directory, key, value):
         try:
             if self.engine is None:
                 self.ensure_db()
             with Session(self.engine) as env_session:
-                stmt = select(EnvVariable).where(EnvVariable.directory == directory and EnvVariable.key == key)
+                stmt = select(EnvVariable).where(EnvVariable.Directory == directory and EnvVariable.Key == key)
                 existing_env = env_session.scalars(stmt).one()
                 if existing_env is None:
                     env_var = EnvVariable(
-                        directory=directory,
-                        key=key,
-                        value=value
+                        Directory=directory,
+                        Key=key,
+                        Value=value
                     )
                     env_session.add(env_var)
                 else:
                     existing_env.value = value
                 env_session.commit()
-        except Exception as ex:
-            print(f'🛑 save env went wrong: {ex}')
+        except Exception:
+            print('🛑 save env went wrong:')
+            raise
 
     def get_env_value(self, directory, key):
         try:
             if self.engine is None:
                 self.ensure_db()
             with Session(self.engine) as env_session:
-                stmt = select(EnvVariable).where(EnvVariable.directory == directory and EnvVariable.key == key)
+                stmt = select(EnvVariable).where(EnvVariable.Directory == directory and EnvVariable.Key == key)
                 return env_session.scalars(stmt).one()
-        except Exception as ex:
-            print(f'🛑 get env went wrong: {ex}')
+        except Exception:
+            print('🛑 get env went wrong:')
+            raise
 
     def get_env_values(self, directory):
         try:
             if self.engine is None:
                 self.ensure_db()
             with Session(self.engine) as env_session:
-                stmt = select(EnvVariable).where(EnvVariable.directory == directory)
+                stmt = select(EnvVariable).where(EnvVariable.Directory == directory)
                 return env_session.scalars(stmt).all()
-        except Exception as ex:
-            print(f'🛑 get all envs went wrong: {ex}')
+        except Exception:
+            print('🛑 get all envs went wrong:')
+            raise
+
+    def get_all_directories(self):
+        try:
+            if self.engine is None:
+                self.ensure_db()
+            with Session(self.engine) as env_session:
+                directories = Session.query(EnvVariable.Directory).distinct()
+                return directories
+        except Exception:
+            print('🛑 get all envs went wrong:')
+            raise
 
     def delete_value(self, directory, key):
         try:
             if self.engine is None:
                 self.ensure_db()
             with Session(self.engine) as env_session:
-                stmt = select(EnvVariable).where(EnvVariable.directory == directory and EnvVariable.key == key)
+                stmt = select(EnvVariable).where(EnvVariable.Directory == directory and EnvVariable.Key == key)
                 env_var = env_session.scalars(stmt).one()
                 if env_var is not None:
                     env_session.delete(env_var)
                     env_session.commit()
-        except Exception as ex:
-            print(f'🛑 delete env went wrong: {ex}')
+        except Exception:
+            print('🛑 delete env went wrong:')
+            raise
 
     def delete_values(self, directory):
         try:
             if self.engine is None:
                 self.ensure_db()
             with Session(self.engine) as env_session:
-                stmt = select(EnvVariable).where(EnvVariable.directory == directory)
+                stmt = select(EnvVariable).where(EnvVariable.Directory == directory)
                 env_vars = env_session.scalars(stmt).all()
                 for env_var in env_vars:
                     env_session.delete(env_var)
                 env_session.commit()
-        except Exception as ex:
-            print(f'🛑 delete env went wrong: {ex}')
+        except Exception:
+            print('🛑 delete env went wrong:')
+            raise

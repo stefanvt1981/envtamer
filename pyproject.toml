@@ -17,10 +17,12 @@ packages = [
     { include = "*.py" },
     { include = "env_tamer" },
     { include = "env_tamer/*.py" },
+    { include = "env_tamer_db" },
+    { include = "env_tamer_db/*.py" },
 ]
 
 [tool.poetry.scripts]
-env_tamer = "env_tamer.cli:tame_env"
+env_tamer = "env_tamer.cli:cli"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

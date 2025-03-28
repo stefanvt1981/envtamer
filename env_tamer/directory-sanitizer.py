@@ -11,7 +11,7 @@ class DirectoryNameSanitizer:
             'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
         }
 
-    def sanitize(self):
+    def sanitize(self) -> str:
         for root, dirs, files in os.walk(self.directory, topdown=False):
             for name in dirs:
                 sanitized_name = self.invalid_characters.sub('_', name)
@@ -19,3 +19,4 @@ class DirectoryNameSanitizer:
                     sanitized_name = f'_{sanitized_name}'
                 if sanitized_name != name:
                     os.rename(os.path.join(root, name), os.path.join(root, sanitized_name))
+        return sanitized_name
